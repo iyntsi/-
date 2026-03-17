@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>脈アリ診断</title>
+<title>脈アリ診断 完全版</title>
 <style>
 body {
   font-family: sans-serif;
@@ -18,20 +18,23 @@ body {
   margin: auto;
 }
 button {
-  margin: 10px;
-  padding: 10px 20px;
+  margin: 8px;
+  padding: 10px 15px;
   border-radius: 10px;
   border: none;
   background: #ff7aa2;
   color: white;
   cursor: pointer;
 }
+button:hover {
+  background: #ff4d7a;
+}
 </style>
 </head>
 <body>
 
 <div id="game">
-  <h2 id="question">スタート！</h2>
+  <h2 id="question"></h2>
   <div id="choices"></div>
   <p id="result"></p>
 </div>
@@ -41,30 +44,47 @@ let point = 0;
 let step = 0;
 
 const questions = [
-  {
-    q: "話しかけたときどうだった？",
-    a: [
-      { text: "😊 笑顔", p: 5 },
-      { text: "🙂 普通", p: 3 },
-      { text: "😐 無視", p: 1 }
-    ]
-  },
-  {
-    q: "LINEしたときは？",
-    a: [
-      { text: "💕 すぐ返信＆続く", p: 5 },
-      { text: "🙂 普通に返信", p: 3 },
-      { text: "😐 そっけない", p: 1 }
-    ]
-  },
-  {
-    q: "目が合ったときは？",
-    a: [
-      { text: "😊 笑った", p: 5 },
-      { text: "🙂 少し見た", p: 3 },
-      { text: "😐 そらされた", p: 1 }
-    ]
-  }
+  {q:"話しかけたときどうだった？", a:[
+    {text:"😊 笑顔", p:5},{text:"🙂 普通", p:3},{text:"😐 無視", p:1}]},
+
+  {q:"LINEしたときは？", a:[
+    {text:"💕 すぐ返信＆続く", p:5},{text:"🙂 普通に返信", p:3},{text:"😐 そっけない", p:1}]},
+
+  {q:"目が合ったときは？", a:[
+    {text:"😊 笑った", p:5},{text:"🙂 少し見た", p:3},{text:"😐 そらされた", p:1}]},
+
+  {q:"隣の席になったとき", a:[
+    {text:"よく話しかけてくる", p:5},{text:"普通に話す", p:3},{text:"あまり話さない", p:1}]},
+
+  {q:"授業中の様子", a:[
+    {text:"よく目が合う", p:5},{text:"たまに合う", p:3},{text:"全然合わない", p:1}]},
+
+  {q:"帰り道で", a:[
+    {text:"一緒に帰ろうと言われた", p:5},{text:"たまたま一緒", p:3},{text:"すぐ別れる", p:1}]},
+
+  {q:"すれ違ったとき", a:[
+    {text:"向こうから挨拶", p:5},{text:"返してくれる", p:3},{text:"気づかないふり", p:1}]},
+
+  {q:"LINEの頻度", a:[
+    {text:"向こうから来る", p:5},{text:"普通", p:3},{text:"続かない", p:1}]},
+
+  {q:"返信の内容", a:[
+    {text:"質問してくる", p:5},{text:"普通", p:3},{text:"短文だけ", p:1}]},
+
+  {q:"あなたへの態度", a:[
+    {text:"明らかに優しい", p:5},{text:"普通", p:3},{text:"冷たい", p:1}]},
+
+  {q:"笑い方", a:[
+    {text:"よく笑う", p:5},{text:"たまに", p:3},{text:"あまり笑わない", p:1}]},
+
+  {q:"他の人と比べて", a:[
+    {text:"自分だけ特別", p:5},{text:"少し違う", p:3},{text:"同じ", p:1}]},
+
+  {q:"困っているとき", a:[
+    {text:"助けてくれる", p:5},{text:"普通", p:3},{text:"スルー", p:1}]},
+
+  {q:"あなたの話を", a:[
+    {text:"覚えてくれてる", p:5},{text:"少し覚えてる", p:3},{text:"覚えてない", p:1}]}
 ];
 
 function showQuestion() {
@@ -74,7 +94,7 @@ function showQuestion() {
   }
 
   const q = questions[step];
-  document.getElementById("question").innerText = q.q;
+  document.getElementById("question").innerText = `Q${step+1}. ${q.q}`;
 
   let buttons = "";
   q.a.forEach(choice => {
@@ -91,13 +111,14 @@ function select(p) {
 }
 
 function showResult() {
-  let percent = Math.floor((point / 15) * 100);
+  let max = questions.length * 5;
+  let percent = Math.floor((point / max) * 100);
   let text = "";
 
-  if (percent >= 80) text = "💕 脈アリ確定！";
-  else if (percent >= 60) text = "😊 いい感じ！";
-  else if (percent >= 40) text = "😐 微妙…";
-  else text = "💔 脈ナシかも";
+  if (percent >= 80) text = "💕 脈アリ確定！告白いける！";
+  else if (percent >= 60) text = "😊 かなりいい感じ！";
+  else if (percent >= 40) text = "😐 まだ微妙…";
+  else text = "💔 ちょっと厳しいかも";
 
   document.getElementById("question").innerText = "結果";
   document.getElementById("choices").innerHTML =
