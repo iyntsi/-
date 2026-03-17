@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>脈アリ診断ゲーム</title>
+<title>脈アリ診断</title>
 <style>
 body {
   font-family: sans-serif;
@@ -26,114 +26,87 @@ button {
   color: white;
   cursor: pointer;
 }
-button:hover {
-  background: #ff4d7a;
-}
 </style>
 </head>
 <body>
 
 <div id="game">
-  <h2 id="day">1日目</h2>
-  <p id="text">どうする？</p>
-
-  <div id="choices">
-    <button onclick="action('talk')">😊 話しかける</button>
-    <button onclick="action('line')">📱 LINEする</button>
-    <button onclick="action('eye')">👀 目が合う</button>
-  </div>
-
-  <p id="status"></p>
+  <h2 id="question">スタート！</h2>
+  <div id="choices"></div>
+  <p id="result"></p>
 </div>
 
 <script>
-let day = 1;
 let point = 0;
-let maxPoint = 25; // 最大想定
+let step = 0;
 
-function updateStatus() {
-  let percent = Math.floor((point / maxPoint) * 100);
-  document.getElementById("status").innerHTML =
-    "脈アリ度: " + percent + "%（ポイント: " + point + "）";
+const questions = [
+  {
+    q: "話しかけたときどうだった？",
+    a: [
+      { text: "😊 笑顔", p: 5 },
+      { text: "🙂 普通", p: 3 },
+      { text: "😐 無視", p: 1 }
+    ]
+  },
+  {
+    q: "LINEしたときは？",
+    a: [
+      { text: "💕 すぐ返信＆続く", p: 5 },
+      { text: "🙂 普通に返信", p: 3 },
+      { text: "😐 そっけない", p: 1 }
+    ]
+  },
+  {
+    q: "目が合ったときは？",
+    a: [
+      { text: "😊 笑った", p: 5 },
+      { text: "🙂 少し見た", p: 3 },
+      { text: "😐 そらされた", p: 1 }
+    ]
+  }
+];
+
+function showQuestion() {
+  if (step >= questions.length) {
+    showResult();
+    return;
+  }
+
+  const q = questions[step];
+  document.getElementById("question").innerText = q.q;
+
+  let buttons = "";
+  q.a.forEach(choice => {
+    buttons += `<button onclick="select(${choice.p})">${choice.text}</button>`;
+  });
+
+  document.getElementById("choices").innerHTML = buttons;
 }
 
-function action(type) {
-  let rand = Math.random();
-  let msg = "";
-  let add = 0;
-
-  if (type === "talk") {
-    if (rand < 0.4) {
-      msg = "笑顔で会話が続いた！😊（+5）";
-      add = 5;
-    } else if (rand < 0.8) {
-      msg = "普通に会話できた🙂（+3）";
-      add = 3;
-    } else {
-      msg = "そっけない反応だった😐（+1）";
-      add = 1;
-    }
-  }
-
-  if (type === "line") {
-    if (rand < 0.4) {
-      msg = "すぐ返信＋会話続いた！💕（+5）";
-      add = 5;
-    } else if (rand < 0.8) {
-      msg = "普通に返信きた🙂（+3）";
-      add = 3;
-    } else {
-      msg = "返信遅くて短い😐（+1）";
-      add = 1;
-    }
-  }
-
-  if (type === "eye") {
-    if (rand < 0.4) {
-      msg = "目が合って笑ってくれた！😊（+5）";
-      add = 5;
-    } else if (rand < 0.8) {
-      msg = "少し目が合った🙂（+3）";
-      add = 3;
-    } else {
-      msg = "すぐそらされた😐（+1）";
-      add = 1;
-    }
-  }
-
-  point += add;
-  day++;
-
-  document.getElementById("text").innerText = msg;
-  updateStatus();
-
-  if (day > 5) {
-    ending();
-  } else {
-    document.getElementById("day").innerText = day + "日目";
-  }
+function select(p) {
+  point += p;
+  step++;
+  showQuestion();
 }
 
-function ending() {
-  let percent = Math.floor((point / maxPoint) * 100);
-  let result = "";
+function showResult() {
+  let percent = Math.floor((point / 15) * 100);
+  let text = "";
 
-  if (percent >= 80) {
-    result = "💕 脈アリ確定！告白成功！";
-  } else if (percent >= 60) {
-    result = "😊 いい感じ！あと一歩！";
-  } else if (percent >= 40) {
-    result = "😐 まだ微妙…";
-  } else {
-    result = "💔 脈ナシかも…";
-  }
+  if (percent >= 80) text = "💕 脈アリ確定！";
+  else if (percent >= 60) text = "😊 いい感じ！";
+  else if (percent >= 40) text = "😐 微妙…";
+  else text = "💔 脈ナシかも";
 
-  document.getElementById("text").innerText = result;
+  document.getElementById("question").innerText = "結果";
   document.getElementById("choices").innerHTML =
     "<button onclick='location.reload()'>もう一回</button>";
+  document.getElementById("result").innerText =
+    "脈アリ度: " + percent + "%\n" + text;
 }
 
-updateStatus();
+showQuestion();
 </script>
 
 </body>
