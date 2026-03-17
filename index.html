@@ -5,129 +5,164 @@
 <title>脈アリ診断 完全版</title>
 <style>
 body {
-  font-family: sans-serif;
-  background: #ffeef5;
+  font-family: "Arial";
+  background: linear-gradient(#ffeef5, #ffd6e7);
   text-align: center;
   padding: 20px;
 }
 #game {
   background: white;
   padding: 20px;
-  border-radius: 15px;
-  max-width: 500px;
+  border-radius: 20px;
+  max-width: 550px;
   margin: auto;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
 }
 button {
   margin: 8px;
-  padding: 10px 15px;
-  border-radius: 10px;
+  padding: 12px 18px;
+  border-radius: 15px;
   border: none;
   background: #ff7aa2;
   color: white;
   cursor: pointer;
+  font-size: 14px;
 }
 button:hover {
   background: #ff4d7a;
+}
+input {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
 }
 </style>
 </head>
 <body>
 
 <div id="game">
-  <h2 id="question"></h2>
-  <div id="choices"></div>
-  <p id="result"></p>
+  <h2 id="title">💕 脈アリ診断 💕</h2>
+  <div id="content"></div>
 </div>
 
 <script>
+let name = "";
 let point = 0;
 let step = 0;
+let selectedQuestions = [];
 
-const questions = [
+// 全質問（大量）
+const allQuestions = [
   {q:"話しかけたときどうだった？", a:[
-    {text:"😊 笑顔", p:5},{text:"🙂 普通", p:3},{text:"😐 無視", p:1}]},
+    {text:"😊 笑顔", p:5},{text:"🙂 普通", p:3},{text:"😐 無視", p:1},{text:"💔 避けられる", p:-3}]},
 
-  {q:"LINEしたときは？", a:[
-    {text:"💕 すぐ返信＆続く", p:5},{text:"🙂 普通に返信", p:3},{text:"😐 そっけない", p:1}]},
+  {q:"LINEの返信は？", a:[
+    {text:"💕 すぐ＆続く", p:5},{text:"🙂 普通", p:3},{text:"😐 遅い", p:1},{text:"💔 既読無視", p:-3}]},
 
-  {q:"目が合ったときは？", a:[
-    {text:"😊 笑った", p:5},{text:"🙂 少し見た", p:3},{text:"😐 そらされた", p:1}]},
-
-  {q:"隣の席になったとき", a:[
-    {text:"よく話しかけてくる", p:5},{text:"普通に話す", p:3},{text:"あまり話さない", p:1}]},
-
-  {q:"授業中の様子", a:[
-    {text:"よく目が合う", p:5},{text:"たまに合う", p:3},{text:"全然合わない", p:1}]},
-
-  {q:"帰り道で", a:[
-    {text:"一緒に帰ろうと言われた", p:5},{text:"たまたま一緒", p:3},{text:"すぐ別れる", p:1}]},
-
-  {q:"すれ違ったとき", a:[
-    {text:"向こうから挨拶", p:5},{text:"返してくれる", p:3},{text:"気づかないふり", p:1}]},
-
-  {q:"LINEの頻度", a:[
-    {text:"向こうから来る", p:5},{text:"普通", p:3},{text:"続かない", p:1}]},
-
-  {q:"返信の内容", a:[
-    {text:"質問してくる", p:5},{text:"普通", p:3},{text:"短文だけ", p:1}]},
-
-  {q:"あなたへの態度", a:[
-    {text:"明らかに優しい", p:5},{text:"普通", p:3},{text:"冷たい", p:1}]},
-
-  {q:"笑い方", a:[
-    {text:"よく笑う", p:5},{text:"たまに", p:3},{text:"あまり笑わない", p:1}]},
+  {q:"目が合ったとき", a:[
+    {text:"😊 笑う", p:5},{text:"🙂 普通", p:3},{text:"😐 そらす", p:1},{text:"💔 避ける", p:-3}]},
 
   {q:"他の人と比べて", a:[
-    {text:"自分だけ特別", p:5},{text:"少し違う", p:3},{text:"同じ", p:1}]},
+    {text:"✨ 特別扱い", p:5},{text:"🙂 少し違う", p:3},{text:"😐 同じ", p:1},{text:"💔 冷たい", p:-3}]},
+
+  {q:"誘ったとき", a:[
+    {text:"💕 喜んでOK", p:5},{text:"🙂 状況次第", p:3},{text:"😐 渋る", p:1},{text:"💔 断られる", p:-3}]},
+
+  {q:"会話の深さ", a:[
+    {text:"💬 プライベート話", p:5},{text:"🙂 普通", p:3},{text:"😐 表面だけ", p:1},{text:"💔 話さない", p:-3}]},
 
   {q:"困っているとき", a:[
-    {text:"助けてくれる", p:5},{text:"普通", p:3},{text:"スルー", p:1}]},
+    {text:"✨ 助けてくれる", p:5},{text:"🙂 普通", p:3},{text:"😐 無関心", p:1},{text:"💔 無視", p:-3}]},
 
-  {q:"あなたの話を", a:[
-    {text:"覚えてくれてる", p:5},{text:"少し覚えてる", p:3},{text:"覚えてない", p:1}]}
+  {q:"SNSの反応", a:[
+    {text:"💕 よく反応", p:5},{text:"🙂 たまに", p:3},{text:"😐 少ない", p:1},{text:"💔 なし", p:-3}]},
+
+  {q:"距離感", a:[
+    {text:"💖 近い", p:5},{text:"🙂 普通", p:3},{text:"😐 遠い", p:1},{text:"💔 避ける", p:-3}]},
+
+  {q:"帰り道", a:[
+    {text:"💕 一緒に帰る", p:5},{text:"🙂 たまに", p:3},{text:"😐 別", p:1},{text:"💔 避ける", p:-3}]},
+
+  {q:"名前の呼び方", a:[
+    {text:"💖 名前呼び", p:5},{text:"🙂 苗字", p:3},{text:"😐 あまり呼ばない", p:1},{text:"💔 呼ばれない", p:-3}]},
+
+  {q:"嫉妬", a:[
+    {text:"🔥 気にしてる", p:5},{text:"🙂 少し", p:3},{text:"😐 無関心", p:1},{text:"💔 全くなし", p:-3}]},
+
+  {q:"視線", a:[
+    {text:"👀 よく見る", p:5},{text:"🙂 たまに", p:3},{text:"😐 少ない", p:1},{text:"💔 ない", p:-3}]},
+
+  {q:"予定", a:[
+    {text:"💕 合わせてくれる", p:5},{text:"🙂 普通", p:3},{text:"😐 合わせない", p:1},{text:"💔 拒否", p:-3}]}
 ];
 
+// スタート画面
+function startScreen() {
+  document.getElementById("content").innerHTML = `
+    <p>名前を入力してスタート！</p>
+    <input id="nameInput" placeholder="名前">
+    <br><br>
+    <button onclick="startGame()">スタート</button>
+  `;
+}
+
+// ゲーム開始
+function startGame() {
+  name = document.getElementById("nameInput").value || "あなた";
+  selectedQuestions = shuffle(allQuestions).slice(0, 10);
+  showQuestion();
+}
+
+// 質問表示
 function showQuestion() {
-  if (step >= questions.length) {
+  if (step >= selectedQuestions.length) {
     showResult();
     return;
   }
 
-  const q = questions[step];
-  document.getElementById("question").innerText = `Q${step+1}. ${q.q}`;
+  let q = selectedQuestions[step];
+  let html = `<h3>Q${step+1}. ${q.q}</h3>`;
 
-  let buttons = "";
   q.a.forEach(choice => {
-    buttons += `<button onclick="select(${choice.p})">${choice.text}</button>`;
+    html += `<button onclick="select(${choice.p})">${choice.text}</button>`;
   });
 
-  document.getElementById("choices").innerHTML = buttons;
+  document.getElementById("content").innerHTML = html;
 }
 
+// 選択
 function select(p) {
   point += p;
   step++;
   showQuestion();
 }
 
+// 結果
 function showResult() {
-  let max = questions.length * 5;
+  let max = selectedQuestions.length * 5;
   let percent = Math.floor((point / max) * 100);
   let text = "";
 
-  if (percent >= 80) text = "💕 脈アリ確定！告白いける！";
-  else if (percent >= 60) text = "😊 かなりいい感じ！";
-  else if (percent >= 40) text = "😐 まだ微妙…";
+  if (percent >= 85) text = "💍 完全に両想いレベル";
+  else if (percent >= 70) text = "💕 脈アリ！かなりいい感じ";
+  else if (percent >= 55) text = "😊 いい感じ";
+  else if (percent >= 40) text = "😐 まだ微妙";
   else text = "💔 ちょっと厳しいかも";
 
-  document.getElementById("question").innerText = "結果";
-  document.getElementById("choices").innerHTML =
-    "<button onclick='location.reload()'>もう一回</button>";
-  document.getElementById("result").innerText =
-    "脈アリ度: " + percent + "%\n" + text;
+  document.getElementById("content").innerHTML = `
+    <h2>${name}の結果</h2>
+    <h3>脈アリ度 ${percent}%</h3>
+    <p>${text}</p>
+    <button onclick="location.reload()">もう一回</button>
+  `;
 }
 
-showQuestion();
+// シャッフル
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+startScreen();
 </script>
 
 </body>
